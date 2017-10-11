@@ -1,6 +1,6 @@
 import pygame as pg
 from pygame.math import Vector2 as V2
-from math import pi, sin, cos, tan, atan2
+from math import pi, sin, cos, tan, atan, atan2, log
 
 
 class Player:
@@ -113,10 +113,10 @@ def draw_view_fast(surface, board, block_size, player):
     focal_length = (surface.get_width() / 2) / tan(player.fov / 2)
     scan_steps = 300
     secondary_scan_steps = 30
-    max_scan_distance = screen.get_width()
+    max_scan_distance = 1000
 
     for x in range(0, surface.get_width()):
-        angle = ((x / surface.get_width()) - 0.5) * player.fov + player.angle  # absolute map angle
+        angle = ((x / (surface.get_width() - 1)) - 0.5) * player.fov + player.angle  # absolute map angle
         horizon_point = max_scan_distance * V2(cos(angle), sin(angle))
         step = (horizon_point - player.pos) / scan_steps
         secondary_step = -step / secondary_scan_steps
@@ -141,7 +141,8 @@ def draw_view_fast(surface, board, block_size, player):
                         n = max(0.1, n)
                         color = (n * 255, n * 255, n * 255)
                         # height = 20000 / distance
-                        height = block_size * focal_length / distance
+                        effective_distance = distance * cos(angle - player.angle)
+                        height = block_size / effective_distance * focal_length
                         pg.draw.line(surface, color, (x, surface.get_height() // 2 - height // 2),
                                      (x, surface.get_height() // 2 + height // 2), 1)
                         break
@@ -169,12 +170,12 @@ if __name__ == "__main__":
     board = [
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
         [1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
+        [1, 0, 1, 0, 0, 0, 0, 0, 0, 1],
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ]
